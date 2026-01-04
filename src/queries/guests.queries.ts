@@ -4,10 +4,13 @@ export interface Guest {
   id?: string;
   full_name: string;
   status?: "pending" | "confirmed" | "declined";
+  has_plus_one?: boolean;
+  plus_one_name?: string | null;
   responded_at?: Date | null;
   created_at?: Date;
   updated_at?: Date;
 }
+
 
 export const getAllGuests = async (): Promise<Guest[]> => {
   return await db.any<Guest>(
@@ -15,6 +18,8 @@ export const getAllGuests = async (): Promise<Guest[]> => {
        id,
        full_name,
        status,
+       has_plus_one,
+       plus_one_name,
        responded_at,
        created_at,
        updated_at
@@ -29,6 +34,8 @@ export const searchGuestsByName = async (search: string): Promise<Guest[]> => {
        id,
        full_name,
        status,
+       has_plus_one,
+       plus_one_name,
        responded_at
      FROM guests
      WHERE full_name ILIKE '%' || $1 || '%'
@@ -43,6 +50,8 @@ export const getGuestById = async (id: string): Promise<Guest | null> => {
        id,
        full_name,
        status,
+       has_plus_one,
+       plus_one_name,
        responded_at,
        created_at,
        updated_at
@@ -52,25 +61,34 @@ export const getGuestById = async (id: string): Promise<Guest | null> => {
   );
 };
 
+
 export const updateGuestStatus = async (
   id: string,
-  status: "confirmed" | "declined"
+  status: "confirmed" | "declined",
+  hasPlusOne: boolean,
+  plusOneName?: string
 ): Promise<Guest | null> => {
   return await db.oneOrNone<Guest>(
     `UPDATE guests
-     SET status = $2,
-         responded_at = NOW(),
-         updated_at = NOW()
+     SET
+       status = $2,
+       has_plus_one = $3,
+       plus_one_name = $4,
+       responded_at = NOW(),
+       updated_at = NOW()
      WHERE id = $1
      RETURNING
        id,
        full_name,
        status,
+       has_plus_one,
+       plus_one_name,
        responded_at,
        updated_at`,
-    [id, status]
+    [id, status, hasPlusOne, plusOneName || null]
   );
 };
+
 
 export const getGuestStats = async (): Promise<
   { status: string; total: number }[]

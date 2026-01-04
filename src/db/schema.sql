@@ -16,4 +16,7 @@ ALTER TABLE guests
 ADD CONSTRAINT guests_status_check
 CHECK (status IN ('pending', 'confirmed', 'declined'));
 
+ALTER TABLE guests
+ADD COLUMN has_plus_one BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN plus_one_name VARCHAR(150);
 CREATE INDEX idx_guests_status ON guests(status);

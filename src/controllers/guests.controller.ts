@@ -9,6 +9,10 @@ import {
 
 const Guests = Router();
 
+/**
+ * GET /guests
+ * ?search=
+ */
 Guests.get("/", async (req: Request, res: Response) => {
   try {
     const search = req.query.search as string | undefined;
@@ -29,6 +33,9 @@ Guests.get("/", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * GET /guests/stats
+ */
 Guests.get("/stats", async (_req: Request, res: Response) => {
   try {
     const stats = await getGuestStats();
@@ -45,6 +52,9 @@ Guests.get("/stats", async (_req: Request, res: Response) => {
   }
 });
 
+/**
+ * GET /guests/:id
+ */
 Guests.get("/:id", async (req: Request, res: Response) => {
   try {
     const guest = await getGuestById(req.params.id);
@@ -68,10 +78,20 @@ Guests.get("/:id", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * PATCH /guests/:id/rsvp
+ * body:
+ * {
+ *   status: "confirmed" | "declined",
+ *   has_plus_one: boolean,
+ *   plus_one_name?: string
+ * }
+ */
 Guests.patch("/:id/rsvp", async (req: Request, res: Response) => {
   try {
-    const { status } = req.body;
+    const { status, has_plus_one, plus_one_name } = req.body;
 
+    // validar status
     if (status !== "confirmed" && status !== "declined") {
       return res.status(400).json({
         success: false,
@@ -79,7 +99,28 @@ Guests.patch("/:id/rsvp", async (req: Request, res: Response) => {
       });
     }
 
-    const updated = await updateGuestStatus(req.params.id, status);
+    // validar has_plus_one
+    if (typeof has_plus_one !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        error: "has_plus_one must be a boolean",
+      });
+    }
+
+    // si trae acompañante, nombre es obligatorio
+    if (has_plus_one && !plus_one_name) {
+      return res.status(400).json({
+        success: false,
+        error: "plus_one_name is required when has_plus_one is true",
+      });
+    }
+
+    const updated = await updateGuestStatus(
+      req.params.id,
+      status,
+      has_plus_one,
+      plus_one_name
+    );
 
     if (!updated) {
       return res.status(404).json({
