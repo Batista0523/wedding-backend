@@ -29,22 +29,19 @@ export const getAllGuests = async (): Promise<Guest[]> => {
   );
 };
 
-export const searchGuestsByName = async (search: string) => {
-  return await db.any(
-    `
-    SELECT
-      id,
-      full_name,
-      status,
-      has_plus_one,
-      plus_one_name,
-      attendance
-    FROM guests
-    WHERE
-      responded_at IS NULL
-      AND full_name ILIKE '%' || $1 || '%'
-    ORDER BY full_name
-    `,
+export const searchGuestsByName = async (search: string): Promise<Guest[]> => {
+  return await db.any<Guest>(
+    `SELECT 
+       id,
+       full_name,
+       status,
+       has_plus_one,
+       plus_one_name,
+       responded_at
+     FROM guests
+     WHERE full_name ILIKE $1 || '%'
+     ORDER BY full_name
+     LIMIT 10`,
     [search]
   );
 };
