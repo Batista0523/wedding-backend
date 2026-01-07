@@ -79,33 +79,35 @@ Guests.patch("/:id/rsvp", async (req: Request, res: Response) => {
       });
     }
 
-    if (typeof has_plus_one !== "boolean") {
-      return res.status(400).json({
-        success: false,
-        error: "has_plus_one must be a boolean",
-      });
-    }
+    if (status === "confirmed") {
+      if (typeof has_plus_one !== "boolean") {
+        return res.status(400).json({
+          success: false,
+          error: "has_plus_one must be a boolean",
+        });
+      }
 
-    if (has_plus_one && !plus_one_name) {
-      return res.status(400).json({
-        success: false,
-        error: "plus_one_name is required when has_plus_one is true",
-      });
-    }
+      if (has_plus_one && !plus_one_name) {
+        return res.status(400).json({
+          success: false,
+          error: "plus_one_name is required when has_plus_one is true",
+        });
+      }
 
-    if (!["ceremony", "celebration", "both"].includes(attendance)) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid attendance value",
-      });
+      if (!["ceremony", "celebration", "both"].includes(attendance)) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid attendance value",
+        });
+      }
     }
 
     const updated = await updateGuestStatus(
       req.params.id,
       status,
-      has_plus_one,
-      plus_one_name,
-      attendance
+      has_plus_one ?? false,
+      plus_one_name ?? null,
+      attendance ?? "both"
     );
 
     if (!updated) {
@@ -114,6 +116,7 @@ Guests.patch("/:id/rsvp", async (req: Request, res: Response) => {
         error: "Guest not found",
       });
     }
+    
 
     return res.status(200).json({
       success: true,
@@ -126,5 +129,6 @@ Guests.patch("/:id/rsvp", async (req: Request, res: Response) => {
     });
   }
 });
+
 
 export default Guests;

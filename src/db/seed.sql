@@ -2,7 +2,6 @@
 
 
 
-
 INSERT INTO guests (full_name, status)
 VALUES
   ('Ana Martinez', 'pending'),
