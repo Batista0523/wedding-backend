@@ -47,6 +47,7 @@ export const searchGuestsByName = async (search: string): Promise<Guest[]> => {
 };
 
 
+
 export const getGuestById = async (id: string): Promise<Guest | null> => {
   return db.oneOrNone<Guest>(
     `SELECT 
